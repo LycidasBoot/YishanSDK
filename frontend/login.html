@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>登录 - 官网爬虫统计 SDK</title>
+    <link rel="stylesheet" href="/static/login.css" />
+  </head>
+  <body>
+    <main class="login-shell">
+      <section class="visual">
+        <div class="visual-card">
+          <div class="brand-line">
+            <div class="brand-mark">CS</div>
+            <span>Crawler Stats SDK</span>
+          </div>
+          <h1>官网流量与爬虫洞察</h1>
+          <p>查看站点请求量、爬虫占比、TOP IP、URL 和 User-Agent 分布。</p>
+          <div class="signal-grid">
+            <div>
+              <span>Bot Ratio</span>
+              <strong>12.4%</strong>
+            </div>
+            <div>
+              <span>Requests</span>
+              <strong>2,090</strong>
+            </div>
+          </div>
+          <div class="signal-lines" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <i></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="login-panel" aria-label="登录表单">
+        <form id="loginForm" class="login-card">
+          <p class="eyebrow">Secure Dashboard</p>
+          <h2>登录统计后台</h2>
+          <p class="subtitle">使用内部账号访问 Geokeji 官网爬虫统计。</p>
+
+          <label>
+            <span>账号</span>
+            <input id="username" name="username" autocomplete="username" required />
+          </label>
+
+          <label>
+            <span>密码</span>
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </label>
+
+          <button id="loginButton" type="submit">登录</button>
+          <p id="loginMessage" class="message" role="alert"></p>
+          <p class="hint">建议仅在公司内网或 VPN 环境访问。</p>
+        </form>
+      </section>
+    </main>
+    <script src="/static/login.js"></script>
+  </body>
+</html>

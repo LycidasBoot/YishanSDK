@@ -1,0 +1,36 @@
+version: "2.4"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: crawler_stats_postgres
+    environment:
+      POSTGRES_DB: crawler_stats
+      POSTGRES_USER: crawler
+      POSTGRES_PASSWORD: crawler123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crawler -d crawler_stats"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    container_name: crawler_stats_api
+    environment:
+      DATABASE_URL: postgresql+psycopg://crawler:crawler123@postgres:5432/crawler_stats
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "python scripts/init_db.py &&
+             uvicorn api.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  postgres_data:

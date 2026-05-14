@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+._*
+.env
+agent_offset.json
+yishan_agent_offset.json
+agent.log
+.venv/
+postgres_data/

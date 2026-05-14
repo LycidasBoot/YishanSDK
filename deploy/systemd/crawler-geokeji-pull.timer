@@ -1,0 +1,11 @@
+[Unit]
+Description=Run geokeji.com crawler stats log pull every minute
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=10s
+Unit=crawler-geokeji-pull.service
+
+[Install]
+WantedBy=timers.target

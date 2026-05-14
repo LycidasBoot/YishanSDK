@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>官网智能访客分析系统</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260513-uupm-redesign" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">VI</div>
+          <div>
+            <div class="brand-title">Visitor Intel</div>
+            <div class="brand-subtitle">Website intelligence</div>
+          </div>
+        </div>
+        <nav class="nav-list" aria-label="主导航">
+          <a class="nav-item active" href="/dashboard">Intelligence</a>
+          <a class="nav-item" href="/api/sites" target="_blank" rel="noreferrer">Sites API</a>
+          <a class="nav-item" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+          <a class="nav-item" href="/health" target="_blank" rel="noreferrer">Health</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Official Website Intelligence</p>
+            <h1>官网智能访客分析</h1>
+            <p class="subtitle">将官网访问行为转化成销售线索、AI 抓取可见性和内容价值指标。</p>
+          </div>
+          <div class="toolbar">
+            <label class="site-picker">
+              <span>站点</span>
+              <select id="siteSelect"></select>
+            </label>
+            <button id="refreshButton" type="button">刷新</button>
+            <button id="exportButton" class="secondary-button" type="button">导出 CSV</button>
+            <button id="logoutButton" class="secondary-button" type="button">退出</button>
+          </div>
+        </header>
+
+        <section class="status-row" aria-live="polite">
+          <div id="statusMessage" class="status-message">正在加载站点数据...</div>
+          <div id="lastUpdated" class="last-updated"></div>
+        </section>
+
+        <section class="summary-band" aria-label="分析定位">
+          <div>
+            <span>业务目标</span>
+            <strong>销售线索 · GEO 可见性 · 内容价值</strong>
+          </div>
+          <div>
+            <span>数据来源</span>
+            <strong>Nginx access log + 访客识别规则</strong>
+          </div>
+          <div>
+            <span>当前视角</span>
+            <strong>基础流量保留，智能分析增强</strong>
+          </div>
+        </section>
+
+        <section class="section-block" aria-label="基础流量指标">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Traffic Overview</p>
+              <h2>基础访问统计</h2>
+            </div>
+          </div>
+        </section>
+
+        <section class="metrics-grid primary-metrics" aria-label="基础访问指标">
+          <article class="metric-card total">
+            <span>总请求数</span>
+            <strong id="totalRequests">-</strong>
+            <small>当前站点累计访问事件</small>
+          </article>
+          <article class="metric-card bot">
+            <span>爬虫请求</span>
+            <strong id="botRequests">-</strong>
+            <small>命中内置规则的请求</small>
+          </article>
+          <article class="metric-card human">
+            <span>人工访问</span>
+            <strong id="humanRequests">-</strong>
+            <small>未命中爬虫规则的请求</small>
+          </article>
+          <article class="metric-card ratio">
+            <span>爬虫占比</span>
+            <strong id="botRatio">-</strong>
+            <small id="trafficRiskHint">等待统计数据</small>
+          </article>
+        </section>
+
+        <section class="metrics-grid insight-metrics" aria-label="智能分析指标">
+          <article class="metric-card enterprise">
+            <span>识别企业</span>
+            <strong id="totalOrganizations">-</strong>
+            <small>最近 30 天企业/机构访客</small>
+          </article>
+          <article class="metric-card intent">
+            <span>高意向企业</span>
+            <strong id="highIntentOrganizations">-</strong>
+            <small>访问核心页面且行为活跃</small>
+          </article>
+          <article class="metric-card ai">
+            <span>AI 爬虫请求</span>
+            <strong id="aiBotRequests">-</strong>
+            <small>GPTBot、ClaudeBot、Perplexity 等</small>
+          </article>
+          <article class="metric-card coverage">
+            <span>AI 覆盖率</span>
+            <strong id="aiCoverageRatio">-</strong>
+            <small id="riskHint">等待智能分析数据</small>
+          </article>
+        </section>
+
+        <section class="section-block" aria-label="原始访问统计">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Raw Analytics</p>
+              <h2>原始访问统计</h2>
+            </div>
+          </div>
+          <div class="dashboard-grid compact-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>爬虫分类</h2>
+                  <span>基础流量结构</span>
+                </div>
+              </div>
+              <div id="categoryList" class="rank-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>TOP IP</h2>
+                  <span>高频访问来源</span>
+                </div>
+              </div>
+              <div id="topIpList" class="rank-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>TOP URL Path</h2>
+                  <span>访问路径热度</span>
+                </div>
+              </div>
+              <div id="topPathList" class="rank-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>TOP User-Agent</h2>
+                  <span>客户端与爬虫特征</span>
+                </div>
+              </div>
+              <div id="topUaList" class="rank-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-block" aria-label="业务洞察">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Business Intelligence</p>
+              <h2>线索与 AI 可见性</h2>
+            </div>
+          </div>
+        </section>
+
+        <section class="dashboard-grid insight-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>高意向企业名单</h2>
+                <span>销售优先跟进</span>
+              </div>
+            </div>
+            <div id="leadList" class="rank-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>AI / 搜索爬虫</h2>
+                <span>GEO 抓取信号</span>
+              </div>
+            </div>
+            <div id="crawlerList" class="rank-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>核心页面可见性</h2>
+                <span>AI 与搜索覆盖</span>
+              </div>
+            </div>
+            <div id="coverageList" class="rank-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>页面线索价值</h2>
+                <span>内容优化排序</span>
+              </div>
+            </div>
+            <div id="pageValueList" class="rank-list"></div>
+          </article>
+
+          <article class="panel wide-panel">
+            <div class="panel-header">
+              <div>
+                <h2>异常访问与优化提示</h2>
+                <span>优先处理风险</span>
+              </div>
+            </div>
+            <div id="anomalyList" class="hint-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script src="/static/dashboard.js?v=20260513-uupm-redesign"></script>
+  </body>
+</html>

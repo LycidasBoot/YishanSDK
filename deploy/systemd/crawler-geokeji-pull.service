@@ -1,0 +1,10 @@
+[Unit]
+Description=Pull geokeji.com Nginx access log into Crawler Stats SDK
+After=network-online.target crawler-stats-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=yishankeji
+WorkingDirectory=/opt/crawler-stats-sdk
+ExecStart=/opt/crawler-stats-sdk/scripts/pull_geokeji_logs.sh
