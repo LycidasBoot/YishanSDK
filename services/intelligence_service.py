@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from models.access_event import AccessEvent
 from models.core_page import CorePage
+from services.ip_location_service import lookup_ip_locations
 
 HIGH_INTENT_SCORE = 60
 DEFAULT_WINDOW_DAYS = 30
@@ -31,6 +32,29 @@ def _lead_score(request_count: int, core_page_hits: int, recent_hits: int) -> in
 
 def _page_score(request_count: int, organization_count: int, core_page_hits: int) -> int:
     return min(100, request_count * 2 + organization_count * 18 + core_page_hits * 12)
+
+
+def _lead_ip_context(db: Session, site_id: int, organization_name: str, since: datetime) -> dict:
+    client_ips = list(
+        db.scalars(
+            select(AccessEvent.client_ip)
+            .where(
+                AccessEvent.site_id == site_id,
+                AccessEvent.event_time >= since,
+                AccessEvent.is_bot.is_(False),
+                AccessEvent.organization_name == organization_name,
+            )
+            .distinct()
+        ).all()
+    )
+    locations = lookup_ip_locations(client_ips)
+    location_labels = sorted({item.location for item in locations.values() if item.location})
+    owner_labels = sorted({item.network_owner for item in locations.values() if item.network_owner})
+    return {
+        "ip_count": len(client_ips),
+        "locations": location_labels[:4],
+        "network_owners": owner_labels[:4],
+    }
 
 
 def get_leads(db: Session, site_id: int, limit: int = 20, days: int = DEFAULT_WINDOW_DAYS) -> list[dict]:
@@ -76,6 +100,7 @@ def get_leads(db: Session, site_id: int, limit: int = 20, days: int = DEFAULT_WI
                 "recent_hits": recent_hits,
                 "last_seen": row.last_seen,
                 "intent_score": _lead_score(request_count, core_page_hits, recent_hits),
+                **_lead_ip_context(db, site_id, row.organization_name, since),
             }
         )
     return sorted(leads, key=lambda item: (item["intent_score"], item["last_seen"]), reverse=True)[:limit]

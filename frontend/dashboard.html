@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>官网智能访客分析系统</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260514-ip-location" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514-ip-rule" />
   </head>
   <body>
     <div class="app-shell">
@@ -229,6 +229,42 @@
         </section>
       </main>
     </div>
-    <script src="/static/dashboard.js?v=20260514-ip-location"></script>
+    <dialog id="ruleDialog" class="modal">
+      <form id="ruleForm" class="modal-card" method="dialog">
+        <div class="modal-header">
+          <div>
+            <p class="section-kicker">Visitor Rule</p>
+            <h2>标记企业 IP</h2>
+          </div>
+          <button id="ruleCancelButton" class="icon-button" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="rule-target">
+          <strong id="ruleIp">-</strong>
+          <span id="ruleContext">暂无归属信息</span>
+        </div>
+        <label class="field">
+          <span>企业名称</span>
+          <input id="ruleOrgName" name="organization_name" required placeholder="例如：某某科技" />
+        </label>
+        <label class="field">
+          <span>企业域名</span>
+          <input id="ruleOrgDomain" name="organization_domain" placeholder="example.com" />
+        </label>
+        <label class="field">
+          <span>类型</span>
+          <select id="ruleOrgType" name="organization_type">
+            <option value="company">企业</option>
+            <option value="institution">机构</option>
+            <option value="partner">伙伴</option>
+            <option value="competitor">竞品</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button class="secondary-button" type="button" id="ruleCancelButtonSecondary">取消</button>
+          <button class="primary-button" type="submit" id="ruleSaveButton">保存并回填</button>
+        </div>
+      </form>
+    </dialog>
+    <script src="/static/dashboard.js?v=20260514-ip-rule"></script>
   </body>
 </html>

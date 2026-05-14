@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class IntelligenceOverview(BaseModel):
@@ -19,6 +19,9 @@ class LeadItem(BaseModel):
     organization_domain: str | None
     organization_type: str | None
     request_count: int
+    ip_count: int = 0
+    locations: list[str] = Field(default_factory=list)
+    network_owners: list[str] = Field(default_factory=list)
     core_page_hits: int
     recent_hits: int
     last_seen: datetime
