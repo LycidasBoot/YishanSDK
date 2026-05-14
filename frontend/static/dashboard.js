@@ -98,6 +98,38 @@ function renderList(container, rows, color) {
     .join("");
 }
 
+function renderTopIpList(container, rows) {
+  if (!container) return;
+  if (!rows.length) {
+    container.innerHTML = '<div class="empty">暂无数据</div>';
+    return;
+  }
+
+  const max = Math.max(...rows.map((row) => row.count), 1);
+  container.innerHTML = rows
+    .map((row) => {
+      const width = Math.max(5, Math.round((row.count / max) * 100));
+      const owner = row.organization_name || row.network_owner || "";
+      const meta = [row.location, owner].filter(Boolean).join(" · ");
+      const title = [row.key, meta].filter(Boolean).join(" · ");
+      return `
+        <div class="rank-row ip-row" title="${escapeHtml(title)}">
+          <div class="rank-main">
+            <div class="ip-key">
+              <span class="rank-key">${escapeHtml(row.key || "-")}</span>
+              ${meta ? `<span class="ip-location">${escapeHtml(meta)}</span>` : ""}
+            </div>
+            <span class="rank-count">${formatNumber(row.count)}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${width}%; background:#D97706"></div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function updateTrafficOverview(overview) {
   setText(els.totalRequests, formatNumber(overview.total_requests));
   setText(els.botRequests, formatNumber(overview.bot_requests));
@@ -116,7 +148,12 @@ function updateTrafficOverview(overview) {
 function renderLeadList(container, rows) {
   if (!container) return;
   if (!rows.length) {
-    container.innerHTML = '<div class="empty">暂无已识别企业线索</div>';
+    container.innerHTML = `
+      <div class="empty empty-guidance">
+        <strong>暂无已识别企业线索</strong>
+        <span>当前没有企业 IP 规则或外部识别 Provider 命中。可先从 TOP IP 的地点与网络归属筛选企业、机构、云厂商，再沉淀为访客规则。</span>
+      </div>
+    `;
     return;
   }
 
@@ -234,7 +271,7 @@ async function loadDashboard() {
   if (!state.selectedSiteId) {
     setMetricPlaceholders();
     renderList(els.categoryList, [], "#245BDB");
-    renderList(els.topIpList, [], "#D97706");
+    renderTopIpList(els.topIpList, []);
     renderList(els.topPathList, [], "#059669");
     renderList(els.topUaList, [], "#7C3AED");
     renderLeadList(els.leadList, []);
@@ -263,7 +300,7 @@ async function loadDashboard() {
 
     if (trafficResults[0].status === "fulfilled") updateTrafficOverview(trafficResults[0].value);
     if (trafficResults[1].status === "fulfilled") renderList(els.categoryList, trafficResults[1].value, "#245BDB");
-    if (trafficResults[2].status === "fulfilled") renderList(els.topIpList, trafficResults[2].value, "#D97706");
+    if (trafficResults[2].status === "fulfilled") renderTopIpList(els.topIpList, trafficResults[2].value);
     if (trafficResults[3].status === "fulfilled") renderList(els.topPathList, trafficResults[3].value, "#059669");
     if (trafficResults[4].status === "fulfilled") renderList(els.topUaList, trafficResults[4].value, "#7C3AED");
 

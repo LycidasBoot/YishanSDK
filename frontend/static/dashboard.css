@@ -408,6 +408,25 @@ h1 {
   font-weight: 800;
 }
 
+.ip-key {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.ip-row .rank-main {
+  align-items: start;
+}
+
+.ip-location {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bar-track {
   height: 7px;
   margin-top: 8px;
@@ -430,6 +449,22 @@ h1 {
   color: var(--muted);
   text-align: center;
   font-size: 13px;
+}
+
+.empty-guidance {
+  gap: 8px;
+  padding: 20px;
+  place-items: center;
+}
+
+.empty-guidance strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.empty-guidance span {
+  max-width: 420px;
+  line-height: 1.6;
 }
 
 .empty.compact {

@@ -5,6 +5,7 @@ from sqlalchemy import case, desc, func, select
 from sqlalchemy.orm import Session
 
 from models.access_event import AccessEvent
+from services.ip_location_service import lookup_ip_locations
 
 
 def get_overview(db: Session, site_id: int) -> dict:
@@ -43,7 +44,35 @@ def get_bot_category_counts(db: Session, site_id: int) -> list[dict]:
 
 
 def get_top_ip(db: Session, site_id: int, limit: int) -> list[dict]:
-    return count_by_field(db, site_id, AccessEvent.client_ip, limit)
+    stmt = (
+        select(
+            AccessEvent.client_ip.label("key"),
+            func.count(AccessEvent.id).label("count"),
+            func.max(AccessEvent.organization_name).label("organization_name"),
+            func.max(AccessEvent.organization_domain).label("organization_domain"),
+        )
+        .where(AccessEvent.site_id == site_id)
+        .group_by(AccessEvent.client_ip)
+        .order_by(desc("count"))
+        .limit(limit)
+    )
+    rows = db.execute(stmt).all()
+    locations = lookup_ip_locations([str(row.key) for row in rows])
+    result = []
+    for row in rows:
+        client_ip = str(row.key or "")
+        location = locations.get(client_ip)
+        result.append(
+            {
+                "key": client_ip,
+                "count": int(row.count),
+                "location": location.location if location else None,
+                "network_owner": location.network_owner if location else None,
+                "organization_name": row.organization_name,
+                "organization_domain": row.organization_domain,
+            }
+        )
+    return result
 
 
 def get_top_path(db: Session, site_id: int, limit: int) -> list[dict]:
@@ -83,9 +112,24 @@ def build_stats_export_csv(db: Session, site_id: int, limit: int = 50) -> str:
     ]
     for title, rows in sections:
         writer.writerow([title])
-        writer.writerow(["key", "count"])
+        if title == "Top IP":
+            writer.writerow(["key", "count", "location", "network_owner", "organization_name", "organization_domain"])
+        else:
+            writer.writerow(["key", "count"])
         for row in rows:
-            writer.writerow([row["key"], row["count"]])
+            if title == "Top IP":
+                writer.writerow(
+                    [
+                        row["key"],
+                        row["count"],
+                        row.get("location") or "",
+                        row.get("network_owner") or "",
+                        row.get("organization_name") or "",
+                        row.get("organization_domain") or "",
+                    ]
+                )
+            else:
+                writer.writerow([row["key"], row["count"]])
         writer.writerow([])
 
     return "\ufeff" + output.getvalue()

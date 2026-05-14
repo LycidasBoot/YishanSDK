@@ -5,7 +5,7 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from models.session import get_db
-from schemas.stats import CountItem, OverviewStats
+from schemas.stats import CountItem, OverviewStats, TopIpItem
 from services import stats_service
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -21,7 +21,7 @@ def bot_category(site_id: int, db: Session = Depends(get_db)):
     return stats_service.get_bot_category_counts(db, site_id)
 
 
-@router.get("/top-ip", response_model=list[CountItem])
+@router.get("/top-ip", response_model=list[TopIpItem])
 def top_ip(site_id: int, limit: int = Query(10, ge=1, le=100), db: Session = Depends(get_db)):
     return stats_service.get_top_ip(db, site_id, limit)
 

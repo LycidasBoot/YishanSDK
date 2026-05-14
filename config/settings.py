@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     dashboard_username: str = "yishankeji"
     dashboard_password: str = "YishanSDK8888"
     session_secret: str = "change-me-in-production"
+    ip_location_provider: str = "ip-api"
+    ip_location_timeout_seconds: float = 1.2
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
