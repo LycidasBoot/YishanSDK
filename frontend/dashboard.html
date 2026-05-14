@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>官网智能访客分析系统</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260514-ip-rule" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514-no-leads" />
   </head>
   <body>
     <div class="app-shell">
@@ -29,7 +29,7 @@
           <div>
             <p class="eyebrow">Official Website Intelligence</p>
             <h1>官网智能访客分析</h1>
-            <p class="subtitle">将官网访问行为转化成销售线索、AI 抓取可见性和内容价值指标。</p>
+            <p class="subtitle">将官网访问行为转化成 AI 抓取可见性、内容价值指标和异常访问洞察。</p>
           </div>
           <div class="toolbar">
             <label class="site-picker">
@@ -50,15 +50,15 @@
         <section class="summary-band" aria-label="分析定位">
           <div>
             <span>业务目标</span>
-            <strong>销售线索 · GEO 可见性 · 内容价值</strong>
+            <strong>GEO 可见性 · 内容价值 · 异常访问</strong>
           </div>
           <div>
             <span>数据来源</span>
-            <strong>Nginx access log + 访客识别规则</strong>
+            <strong>Nginx access log + IP 地点归属 + 爬虫识别</strong>
           </div>
           <div>
             <span>当前视角</span>
-            <strong>基础流量保留，智能分析增强</strong>
+            <strong>不强行反推企业，优先展示确定信号</strong>
           </div>
         </section>
 
@@ -95,25 +95,25 @@
         </section>
 
         <section class="metrics-grid insight-metrics" aria-label="智能分析指标">
-          <article class="metric-card enterprise">
-            <span>识别企业</span>
-            <strong id="totalOrganizations">-</strong>
-            <small>最近 30 天企业/机构访客</small>
-          </article>
-          <article class="metric-card intent">
-            <span>高意向企业</span>
-            <strong id="highIntentOrganizations">-</strong>
-            <small>访问核心页面且行为活跃</small>
-          </article>
           <article class="metric-card ai">
             <span>AI 爬虫请求</span>
             <strong id="aiBotRequests">-</strong>
             <small>GPTBot、ClaudeBot、Perplexity 等</small>
           </article>
+          <article class="metric-card search">
+            <span>搜索爬虫请求</span>
+            <strong id="searchEngineRequests">-</strong>
+            <small>Googlebot、Bingbot 等搜索抓取</small>
+          </article>
           <article class="metric-card coverage">
             <span>AI 覆盖率</span>
             <strong id="aiCoverageRatio">-</strong>
             <small id="riskHint">等待智能分析数据</small>
+          </article>
+          <article class="metric-card alert">
+            <span>异常提示</span>
+            <strong id="alertCount">-</strong>
+            <small>高频访问、错误状态与未覆盖页面</small>
           </article>
         </section>
 
@@ -170,23 +170,13 @@
         <section class="section-block" aria-label="业务洞察">
           <div class="section-heading">
             <div>
-              <p class="section-kicker">Business Intelligence</p>
-              <h2>线索与 AI 可见性</h2>
+              <p class="section-kicker">Visibility Intelligence</p>
+              <h2>AI 可见性与访问质量</h2>
             </div>
           </div>
         </section>
 
         <section class="dashboard-grid insight-grid">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>高意向企业名单</h2>
-                <span>销售优先跟进</span>
-              </div>
-            </div>
-            <div id="leadList" class="rank-list"></div>
-          </article>
-
           <article class="panel">
             <div class="panel-header">
               <div>
@@ -210,7 +200,7 @@
           <article class="panel">
             <div class="panel-header">
               <div>
-                <h2>页面线索价值</h2>
+                <h2>页面内容价值</h2>
                 <span>内容优化排序</span>
               </div>
             </div>
@@ -229,42 +219,6 @@
         </section>
       </main>
     </div>
-    <dialog id="ruleDialog" class="modal">
-      <form id="ruleForm" class="modal-card" method="dialog">
-        <div class="modal-header">
-          <div>
-            <p class="section-kicker">Visitor Rule</p>
-            <h2>标记企业 IP</h2>
-          </div>
-          <button id="ruleCancelButton" class="icon-button" type="button" aria-label="关闭">×</button>
-        </div>
-        <div class="rule-target">
-          <strong id="ruleIp">-</strong>
-          <span id="ruleContext">暂无归属信息</span>
-        </div>
-        <label class="field">
-          <span>企业名称</span>
-          <input id="ruleOrgName" name="organization_name" required placeholder="例如：某某科技" />
-        </label>
-        <label class="field">
-          <span>企业域名</span>
-          <input id="ruleOrgDomain" name="organization_domain" placeholder="example.com" />
-        </label>
-        <label class="field">
-          <span>类型</span>
-          <select id="ruleOrgType" name="organization_type">
-            <option value="company">企业</option>
-            <option value="institution">机构</option>
-            <option value="partner">伙伴</option>
-            <option value="competitor">竞品</option>
-          </select>
-        </label>
-        <div class="modal-actions">
-          <button class="secondary-button" type="button" id="ruleCancelButtonSecondary">取消</button>
-          <button class="primary-button" type="submit" id="ruleSaveButton">保存并回填</button>
-        </div>
-      </form>
-    </dialog>
-    <script src="/static/dashboard.js?v=20260514-ip-rule"></script>
+    <script src="/static/dashboard.js?v=20260514-no-leads"></script>
   </body>
 </html>

@@ -1,8 +1,6 @@
 const state = {
   sites: [],
   selectedSiteId: null,
-  topIps: [],
-  selectedIpRule: null,
 };
 
 const els = {
@@ -17,30 +15,19 @@ const els = {
   humanRequests: document.getElementById("humanRequests"),
   botRatio: document.getElementById("botRatio"),
   trafficRiskHint: document.getElementById("trafficRiskHint"),
-  totalOrganizations: document.getElementById("totalOrganizations"),
-  highIntentOrganizations: document.getElementById("highIntentOrganizations"),
   aiBotRequests: document.getElementById("aiBotRequests"),
+  searchEngineRequests: document.getElementById("searchEngineRequests"),
   aiCoverageRatio: document.getElementById("aiCoverageRatio"),
+  alertCount: document.getElementById("alertCount"),
   riskHint: document.getElementById("riskHint"),
   categoryList: document.getElementById("categoryList"),
   topIpList: document.getElementById("topIpList"),
   topPathList: document.getElementById("topPathList"),
   topUaList: document.getElementById("topUaList"),
-  leadList: document.getElementById("leadList"),
   crawlerList: document.getElementById("crawlerList"),
   coverageList: document.getElementById("coverageList"),
   pageValueList: document.getElementById("pageValueList"),
   anomalyList: document.getElementById("anomalyList"),
-  ruleDialog: document.getElementById("ruleDialog"),
-  ruleForm: document.getElementById("ruleForm"),
-  ruleIp: document.getElementById("ruleIp"),
-  ruleContext: document.getElementById("ruleContext"),
-  ruleOrgName: document.getElementById("ruleOrgName"),
-  ruleOrgDomain: document.getElementById("ruleOrgDomain"),
-  ruleOrgType: document.getElementById("ruleOrgType"),
-  ruleCancelButton: document.getElementById("ruleCancelButton"),
-  ruleCancelButtonSecondary: document.getElementById("ruleCancelButtonSecondary"),
-  ruleSaveButton: document.getElementById("ruleSaveButton"),
 };
 
 function formatNumber(value) {
@@ -55,21 +42,6 @@ async function fetchJson(url) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}`);
-  }
-  return response.json();
-}
-
-async function fetchJsonWithOptions(url, options) {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    let message = `${response.status} ${response.statusText}`;
-    try {
-      const payload = await response.json();
-      message = payload.detail || message;
-    } catch (_error) {
-      // Preserve the HTTP status when the error body is not JSON.
-    }
-    throw new Error(message);
   }
   return response.json();
 }
@@ -92,10 +64,10 @@ function setMetricPlaceholders() {
   setText(els.humanRequests, "-");
   setText(els.botRatio, "-");
   setText(els.trafficRiskHint, "等待统计数据");
-  setText(els.totalOrganizations, "-");
-  setText(els.highIntentOrganizations, "-");
   setText(els.aiBotRequests, "-");
+  setText(els.searchEngineRequests, "-");
   setText(els.aiCoverageRatio, "-");
+  setText(els.alertCount, "-");
   setText(els.riskHint, "等待智能分析数据");
 }
 
@@ -127,7 +99,6 @@ function renderList(container, rows, color) {
 
 function renderTopIpList(container, rows) {
   if (!container) return;
-  state.topIps = rows;
   if (!rows.length) {
     container.innerHTML = '<div class="empty">暂无数据</div>';
     return;
@@ -147,10 +118,7 @@ function renderTopIpList(container, rows) {
               <span class="rank-key">${escapeHtml(row.key || "-")}</span>
               ${meta ? `<span class="ip-location">${escapeHtml(meta)}</span>` : ""}
             </div>
-            <div class="ip-actions">
-              <span class="rank-count">${formatNumber(row.count)}</span>
-              <button type="button" class="mini-button" data-mark-ip="${escapeHtml(row.key)}">标记企业</button>
-            </div>
+            <span class="rank-count">${formatNumber(row.count)}</span>
           </div>
           <div class="bar-track">
             <div class="bar-fill" style="width:${width}%; background:#D97706"></div>
@@ -159,86 +127,6 @@ function renderTopIpList(container, rows) {
       `;
     })
     .join("");
-}
-
-function openRuleDialog(clientIp) {
-  const row = state.topIps.find((item) => item.key === clientIp);
-  state.selectedIpRule = row || { key: clientIp };
-  if (!els.ruleDialog || !els.ruleForm) return;
-
-  els.ruleForm.reset();
-  setText(els.ruleIp, state.selectedIpRule.key || "-");
-  setText(
-    els.ruleContext,
-    [state.selectedIpRule.location, state.selectedIpRule.network_owner].filter(Boolean).join(" · ") ||
-      "暂无归属信息",
-  );
-  if (els.ruleOrgName) {
-    els.ruleOrgName.value = state.selectedIpRule.organization_name || state.selectedIpRule.network_owner || "";
-  }
-  if (els.ruleOrgDomain) {
-    els.ruleOrgDomain.value = state.selectedIpRule.organization_domain || "";
-  }
-
-  if (els.ruleDialog.showModal) {
-    els.ruleDialog.showModal();
-  } else {
-    els.ruleDialog.setAttribute("open", "open");
-  }
-  els.ruleOrgName?.focus();
-}
-
-function closeRuleDialog() {
-  if (!els.ruleDialog) return;
-  if (els.ruleDialog.close) {
-    els.ruleDialog.close();
-  } else {
-    els.ruleDialog.removeAttribute("open");
-  }
-  state.selectedIpRule = null;
-}
-
-async function saveIpRule(event) {
-  event.preventDefault();
-  if (!state.selectedIpRule || !els.ruleOrgName) return;
-
-  const organizationName = els.ruleOrgName.value.trim();
-  if (!organizationName) {
-    setStatus("请填写企业名称", true);
-    return;
-  }
-
-  const payload = {
-    rule_type: "exact_ip",
-    pattern: state.selectedIpRule.key,
-    organization_name: organizationName,
-    organization_domain: els.ruleOrgDomain?.value.trim() || null,
-    organization_type: els.ruleOrgType?.value || "company",
-    confidence: 90,
-    priority: 200,
-    is_active: true,
-  };
-
-  if (els.ruleSaveButton) {
-    els.ruleSaveButton.disabled = true;
-  }
-
-  try {
-    await fetchJsonWithOptions("/api/visitor-rules", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    closeRuleDialog();
-    setStatus(`已将 ${payload.pattern} 标记为 ${payload.organization_name}`);
-    await loadDashboard();
-  } catch (error) {
-    setStatus(`保存企业规则失败：${error.message}`, true);
-  } finally {
-    if (els.ruleSaveButton) {
-      els.ruleSaveButton.disabled = false;
-    }
-  }
 }
 
 function updateTrafficOverview(overview) {
@@ -254,44 +142,6 @@ function updateTrafficOverview(overview) {
   } else {
     setText(els.trafficRiskHint, "流量结构平稳");
   }
-}
-
-function renderLeadList(container, rows) {
-  if (!container) return;
-  if (!rows.length) {
-    container.innerHTML = `
-      <div class="empty empty-guidance">
-        <strong>暂无已识别企业线索</strong>
-        <span>当前没有企业 IP 规则或外部识别 Provider 命中。可先从 TOP IP 的地点与网络归属筛选企业、机构、云厂商，再沉淀为访客规则。</span>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = rows
-    .map((row) => {
-      const title = [row.organization_domain, row.organization_type].filter(Boolean).join(" · ");
-      const locationText = (row.locations || []).slice(0, 3).join(" / ");
-      return `
-        <div class="lead-row">
-          <div class="lead-main">
-            <div>
-              <strong>${escapeHtml(row.organization_name)}</strong>
-              <span>${escapeHtml(title || "未知类型")}</span>
-            </div>
-            <b>${formatNumber(row.intent_score)}</b>
-          </div>
-          <div class="lead-meta">
-            <span>${formatNumber(row.request_count)} 次访问</span>
-            <span>${formatNumber(row.ip_count)} 个 IP</span>
-            ${locationText ? `<span>${escapeHtml(locationText)}</span>` : ""}
-            <span>${formatNumber(row.core_page_hits)} 次核心页面</span>
-            <span>${formatNumber(row.recent_hits)} 次近 24h</span>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
 }
 
 function renderCoverageList(container, coverage) {
@@ -367,10 +217,10 @@ async function loadSites() {
 }
 
 function updateOverview(overview) {
-  setText(els.totalOrganizations, formatNumber(overview.total_organizations));
-  setText(els.highIntentOrganizations, formatNumber(overview.high_intent_organizations));
   setText(els.aiBotRequests, formatNumber(overview.ai_bot_requests));
+  setText(els.searchEngineRequests, formatNumber(overview.search_engine_requests));
   setText(els.aiCoverageRatio, formatRatio(overview.ai_coverage_ratio));
+  setText(els.alertCount, formatNumber(overview.alert_count));
 
   if (overview.alert_count > 0) {
     setText(els.riskHint, `${formatNumber(overview.alert_count)} 条待关注提示`);
@@ -388,7 +238,6 @@ async function loadDashboard() {
     renderTopIpList(els.topIpList, []);
     renderList(els.topPathList, [], "#059669");
     renderList(els.topUaList, [], "#7C3AED");
-    renderLeadList(els.leadList, []);
     renderList(els.crawlerList, [], "#D97706");
     renderCoverageList(els.coverageList, { pages: [] });
     renderList(els.pageValueList, [], "#059669");
@@ -420,7 +269,6 @@ async function loadDashboard() {
 
     const intelligenceResults = await Promise.allSettled([
       fetchJson(`/api/intelligence/overview?site_id=${siteId}`),
-      fetchJson(`/api/intelligence/leads?site_id=${siteId}&limit=10`),
       fetchJson(`/api/intelligence/crawler-names?site_id=${siteId}`),
       fetchJson(`/api/intelligence/crawler-coverage?site_id=${siteId}`),
       fetchJson(`/api/intelligence/page-value?site_id=${siteId}&limit=10`),
@@ -428,17 +276,16 @@ async function loadDashboard() {
     ]);
 
     if (intelligenceResults[0].status === "fulfilled") updateOverview(intelligenceResults[0].value);
-    if (intelligenceResults[1].status === "fulfilled") renderLeadList(els.leadList, intelligenceResults[1].value);
-    if (intelligenceResults[2].status === "fulfilled") renderList(els.crawlerList, intelligenceResults[2].value, "#D97706");
-    if (intelligenceResults[3].status === "fulfilled") renderCoverageList(els.coverageList, intelligenceResults[3].value);
-    if (intelligenceResults[4].status === "fulfilled") {
+    if (intelligenceResults[1].status === "fulfilled") renderList(els.crawlerList, intelligenceResults[1].value, "#D97706");
+    if (intelligenceResults[2].status === "fulfilled") renderCoverageList(els.coverageList, intelligenceResults[2].value);
+    if (intelligenceResults[3].status === "fulfilled") {
       renderList(
         els.pageValueList,
-        intelligenceResults[4].value.map((row) => ({ key: row.path, count: row.value_score })),
+        intelligenceResults[3].value.map((row) => ({ key: row.path, count: row.value_score })),
         "#059669",
       );
     }
-    if (intelligenceResults[5].status === "fulfilled") renderHints(els.anomalyList, intelligenceResults[5].value);
+    if (intelligenceResults[4].status === "fulfilled") renderHints(els.anomalyList, intelligenceResults[4].value);
 
     const failed = [...trafficResults, ...intelligenceResults].filter((result) => result.status === "rejected");
     if (failed.length) {
@@ -481,19 +328,6 @@ els.exportButton?.addEventListener("click", () => {
   const siteId = encodeURIComponent(state.selectedSiteId);
   window.location.href = `/api/stats/export.csv?site_id=${siteId}&limit=50`;
 });
-els.topIpList?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-mark-ip]");
-  if (!button) return;
-  openRuleDialog(button.dataset.markIp);
-});
-els.ruleCancelButton?.addEventListener("click", closeRuleDialog);
-els.ruleCancelButtonSecondary?.addEventListener("click", closeRuleDialog);
-els.ruleDialog?.addEventListener("click", (event) => {
-  if (event.target === els.ruleDialog) {
-    closeRuleDialog();
-  }
-});
-els.ruleForm?.addEventListener("submit", saveIpRule);
 els.logoutButton?.addEventListener("click", async () => {
   await fetch("/logout", { method: "POST" });
   window.location.href = "/login";
