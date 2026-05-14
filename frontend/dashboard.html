@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>官网智能访客分析系统</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260514-no-leads" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514-bot-top-url" />
   </head>
   <body>
     <div class="app-shell">
@@ -45,21 +45,6 @@
         <section class="status-row" aria-live="polite">
           <div id="statusMessage" class="status-message">正在加载站点数据...</div>
           <div id="lastUpdated" class="last-updated"></div>
-        </section>
-
-        <section class="summary-band" aria-label="分析定位">
-          <div>
-            <span>业务目标</span>
-            <strong>GEO 可见性 · 内容价值 · 异常访问</strong>
-          </div>
-          <div>
-            <span>数据来源</span>
-            <strong>Nginx access log + IP 地点归属 + 爬虫识别</strong>
-          </div>
-          <div>
-            <span>当前视角</span>
-            <strong>不强行反推企业，优先展示确定信号</strong>
-          </div>
         </section>
 
         <section class="section-block" aria-label="基础流量指标">
@@ -148,11 +133,21 @@
             <article class="panel">
               <div class="panel-header">
                 <div>
-                  <h2>TOP URL Path</h2>
-                  <span>访问路径热度</span>
+                  <h2>总访问 TOP URL</h2>
+                  <span>全部请求路径热度</span>
                 </div>
               </div>
               <div id="topPathList" class="rank-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>爬虫访问 TOP URL</h2>
+                  <span>仅统计命中爬虫规则的路径</span>
+                </div>
+              </div>
+              <div id="topBotPathList" class="rank-list"></div>
             </article>
 
             <article class="panel">
@@ -219,6 +214,6 @@
         </section>
       </main>
     </div>
-    <script src="/static/dashboard.js?v=20260514-no-leads"></script>
+    <script src="/static/dashboard.js?v=20260514-bot-top-url"></script>
   </body>
 </html>

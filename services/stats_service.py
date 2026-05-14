@@ -26,10 +26,10 @@ def get_overview(db: Session, site_id: int) -> dict:
     }
 
 
-def count_by_field(db: Session, site_id: int, field, limit: int | None = None) -> list[dict]:
+def count_by_field(db: Session, site_id: int, field, limit: int | None = None, *conditions) -> list[dict]:
     stmt = (
         select(field.label("key"), func.count(AccessEvent.id).label("count"))
-        .where(AccessEvent.site_id == site_id)
+        .where(AccessEvent.site_id == site_id, *conditions)
         .group_by(field)
         .order_by(desc("count"))
     )
@@ -79,6 +79,10 @@ def get_top_path(db: Session, site_id: int, limit: int) -> list[dict]:
     return count_by_field(db, site_id, AccessEvent.path, limit)
 
 
+def get_top_bot_path(db: Session, site_id: int, limit: int) -> list[dict]:
+    return count_by_field(db, site_id, AccessEvent.path, limit, AccessEvent.is_bot.is_(True))
+
+
 def get_top_ua(db: Session, site_id: int, limit: int) -> list[dict]:
     return count_by_field(db, site_id, AccessEvent.user_agent, limit)
 
@@ -108,6 +112,7 @@ def build_stats_export_csv(db: Session, site_id: int, limit: int = 50) -> str:
         ("Bot Category", get_bot_category_counts(db, site_id)),
         ("Top IP", get_top_ip(db, site_id, limit)),
         ("Top URL Path", get_top_path(db, site_id, limit)),
+        ("Top Bot URL Path", get_top_bot_path(db, site_id, limit)),
         ("Top User-Agent", get_top_ua(db, site_id, limit)),
     ]
     for title, rows in sections:

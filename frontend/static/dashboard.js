@@ -23,6 +23,7 @@ const els = {
   categoryList: document.getElementById("categoryList"),
   topIpList: document.getElementById("topIpList"),
   topPathList: document.getElementById("topPathList"),
+  topBotPathList: document.getElementById("topBotPathList"),
   topUaList: document.getElementById("topUaList"),
   crawlerList: document.getElementById("crawlerList"),
   coverageList: document.getElementById("coverageList"),
@@ -237,6 +238,7 @@ async function loadDashboard() {
     renderList(els.categoryList, [], "#245BDB");
     renderTopIpList(els.topIpList, []);
     renderList(els.topPathList, [], "#059669");
+    renderList(els.topBotPathList, [], "#D97706");
     renderList(els.topUaList, [], "#7C3AED");
     renderList(els.crawlerList, [], "#D97706");
     renderCoverageList(els.coverageList, { pages: [] });
@@ -258,6 +260,7 @@ async function loadDashboard() {
       fetchJson(`/api/stats/bot-category?site_id=${siteId}`),
       fetchJson(`/api/stats/top-ip?site_id=${siteId}&limit=10`),
       fetchJson(`/api/stats/top-path?site_id=${siteId}&limit=10`),
+      fetchJson(`/api/stats/top-bot-path?site_id=${siteId}&limit=10`),
       fetchJson(`/api/stats/top-ua?site_id=${siteId}&limit=10`),
     ]);
 
@@ -265,7 +268,8 @@ async function loadDashboard() {
     if (trafficResults[1].status === "fulfilled") renderList(els.categoryList, trafficResults[1].value, "#245BDB");
     if (trafficResults[2].status === "fulfilled") renderTopIpList(els.topIpList, trafficResults[2].value);
     if (trafficResults[3].status === "fulfilled") renderList(els.topPathList, trafficResults[3].value, "#059669");
-    if (trafficResults[4].status === "fulfilled") renderList(els.topUaList, trafficResults[4].value, "#7C3AED");
+    if (trafficResults[4].status === "fulfilled") renderList(els.topBotPathList, trafficResults[4].value, "#D97706");
+    if (trafficResults[5].status === "fulfilled") renderList(els.topUaList, trafficResults[5].value, "#7C3AED");
 
     const intelligenceResults = await Promise.allSettled([
       fetchJson(`/api/intelligence/overview?site_id=${siteId}`),

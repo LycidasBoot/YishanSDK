@@ -31,6 +31,11 @@ def top_path(site_id: int, limit: int = Query(10, ge=1, le=100), db: Session = D
     return stats_service.get_top_path(db, site_id, limit)
 
 
+@router.get("/top-bot-path", response_model=list[CountItem])
+def top_bot_path(site_id: int, limit: int = Query(10, ge=1, le=100), db: Session = Depends(get_db)):
+    return stats_service.get_top_bot_path(db, site_id, limit)
+
+
 @router.get("/top-ua", response_model=list[CountItem])
 def top_ua(site_id: int, limit: int = Query(10, ge=1, le=100), db: Session = Depends(get_db)):
     return stats_service.get_top_ua(db, site_id, limit)
